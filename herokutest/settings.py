@@ -56,11 +56,22 @@ WSGI_APPLICATION = 'herokutest.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
+db_url = os.environ['DATABASE_URL']
+import urlparse
+import re
+
+parsed = urlparse.urlparse(db_url)
+mo = re.match(r'(?P<user>.*):(?P<password>.*)@(?P<host>.*):(?P<port>.*)',
+              parsed.netloc)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'test',
-        'HOST': 'localhost',
+        'NAME': parsed.path.strip('/'),
+        'HOST': mo.group('host'),
+        'USER': mo.group('user'),
+        'PASSWORD': mo.group('password'),
+        'PORT': mo.group('port')
     }
 }
 
